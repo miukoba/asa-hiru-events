@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>朝と昼に開催される勉強会</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="この先2週間、朝と昼に開催される勉強会を一覧表示します（情報はconnpassから取得）" name="description">
+    <meta name="keywords" content="朝,昼,ランチタイム,勉強会,エンジニア">
+    <link rel="stylesheet" href="https://unpkg.com/chota@latest">
+</head>
+
+<body id="top">
+<div class="container">
+    <section>
+        <h1>昼（11:00-14:00）の勉強会</h1>
+        <table class="striped">
+            <thead>
+            <tr>
+                <th>日付</th>
+                <th>時間</th>
+                <th>タイトル</th>
+                <th>グループ</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{ range .LunchtimeEvents }}
+            <tr>
+                <td style="min-width: 90px">{{- .Date }}</td>
+                <td style="min-width: 110px">{{- .Time }}</td>
+                <td><a href="{{- .TittleLink }}" target="_blank" rel="noopener noreferrer">{{- .Title }}</a></td>
+                <td><a href="{{- .GroupLink }}" target="_blank" rel="noopener noreferrer">{{- .Group }}</a></td>
+            </tr>
+            {{ end }}
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h1>朝（6:00-10:00）の勉強会</h1>
+        <table class="striped">
+            <thead>
+            <tr>
+                <th>日付</th>
+                <th>時間</th>
+                <th>タイトル</th>
+                <th>グループ</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{ range .MorningEvents }}
+            <tr>
+                <td>{{- .Date }}</td>
+                <td>{{- .Time }}</td>
+                <td><a href="{{- .TittleLink }}" target="_blank" rel="noopener noreferrer">{{- .Title }}</a></td>
+                <td><a href="{{- .GroupLink }}" target="_blank" rel="noopener noreferrer">{{- .Group }}</a></td>
+            </tr>
+            {{ end }}
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h1>info</h1>
+        <ul>
+            <li>この先2週間、朝と昼に開催される勉強会を一覧表示します</li>
+            <li>情報は connpass API から取得し、1日1回更新されます</li>
+            <li>時間や表示順は自分が便利なように並べています</li>
+            <li>最終更新: {{.LastUpdate}}</li>
+        </ul>
+    </section>
+
+    <footer class="text-center">
+        <h5>Made by <a href="https://www.miukoba.net/" target="_blank" rel="noopener noreferrer">miukoba</a></h5>
+    </footer>
+</div>
+
+<style>
+    section {
+        margin: 5rem auto;
+    }
+</style>
+</body>
+</html>

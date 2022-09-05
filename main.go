@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"html/template"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -11,8 +14,8 @@ import (
 )
 
 func main() {
-	var morningEvents []connpass.Event
-	var lunchtimeEvents []connpass.Event
+	var morningEvents []map[string]string
+	var lunchtimeEvents []map[string]string
 
 	var baseParams []connpass.Param
 	baseParams = append(baseParams, connpass.Count(100))
@@ -50,12 +53,12 @@ func main() {
 		for _, e := range r.Events {
 			if (e.StartedAt.Day() == e.EndedAt.Day()) &&
 				(e.StartedAt.Hour() >= 6 && e.EndedAt.Hour() <= 10) {
-				morningEvents = append(morningEvents, *e)
+				morningEvents = append(morningEvents, convertInfo(e))
 			}
 
 			if (e.StartedAt.Day() == e.EndedAt.Day()) &&
 				(e.StartedAt.Hour() >= 11 && e.EndedAt.Hour() <= 14) {
-				lunchtimeEvents = append(lunchtimeEvents, *e)
+				lunchtimeEvents = append(lunchtimeEvents, convertInfo(e))
 			}
 		}
 
@@ -71,6 +74,32 @@ func main() {
 		time.Sleep(time.Second * 5)
 	}
 
+	t, err := template.ParseFiles("template/index.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	outputPath := "./index.html"
+	f, _ := os.Create(outputPath)
+	w := bufio.NewWriter(f)
+
+	if err := t.Execute(w, struct {
+		LastUpdate      string
+		LunchtimeEvents []map[string]string
+		MorningEvents   []map[string]string
+	}{
+		LastUpdate:      time.Now().Format("2006/01/02 15:04"),
+		LunchtimeEvents: lunchtimeEvents,
+		MorningEvents:   morningEvents,
+	}); err != nil {
+		log.Printf("failed to execute template: %v", err)
+	}
+	w.Flush()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func convertInfo(e *connpass.Event) map[string]string {
 	weekdayJa := strings.NewReplacer(
 		"Sun", "日",
 		"Mon", "月",
@@ -81,19 +110,12 @@ func main() {
 		"Sat", "土",
 	)
 
-	fmt.Println("昼のイベント")
-	fmt.Println("-------------------")
-	for _, e := range lunchtimeEvents {
-		fmt.Println(weekdayJa.Replace(e.StartedAt.Format("1/2(Mon)")))
-		fmt.Println(e.StartedAt.Format("15:04"))
-		fmt.Println(e.EndedAt.Format("15:04"))
-		fmt.Println(e.Title)
-		fmt.Println(e.URL)
-		fmt.Println("-------------------")
+	return map[string]string{
+		"Date":       weekdayJa.Replace(e.StartedAt.Format("1/2(Mon)")),
+		"Time":       e.StartedAt.Format("15:04") + " - " + e.EndedAt.Format("15:04"),
+		"Title":      e.Title,
+		"TittleLink": e.URL,
+		"Group":      e.Series.Title,
+		"GroupLink":  e.Series.URL,
 	}
-
-	fmt.Println("朝のイベント")
-	fmt.Println("-------------------")
-	//for _, e := range morningEvents {
-	//}
 }
